@@ -30,8 +30,6 @@ const OPTIONS = {
 }
 
 const getPersonnels = async (page) => {
-  records = []
-
   const wrapped = limiter.wrap(data.getAirtableRecords);
   const personnels = await wrapped(TABLE, OPTIONS);
 
