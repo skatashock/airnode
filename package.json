@@ -9,6 +9,7 @@
   "dependencies": {
     "airtable": "^0.7.1",
     "bottleneck": "^2.19.5",
+    "cacheman": "^2.2.1",
     "clean-css": "^4.1.11",
     "cookie-parser": "~1.4.4",
     "cors": "^2.8.5",
