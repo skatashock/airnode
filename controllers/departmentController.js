@@ -5,7 +5,7 @@ const dotenv = require('dotenv')
 const Cacheman = require('cacheman')
 
 const cacheOptions = {
-  ttl: 3600
+  ttl: 86400
 }
 
 const cache = new Cacheman('airdir', cacheOptions)
@@ -22,43 +22,33 @@ const base = new Airtable({
   apiKey: process.env.AIRTABLE_API_KEY,
 }).base(process.env.AIRTABLE_BASE_ID)
 
-const TABLE = base('Personnel')
+const TABLE = base('Department')
 const OPTIONS = {
   view: 'Default',
-  filterByFormula: "NOT({Name} = '')",
   pageSize: 100
 }
 
-const getPersonnels = async (page) => {
+const getDepartments = async (page) => {
   const wrapped = limiter.wrap(data.getAirtableRecords)
-  const personnels = await wrapped(TABLE, OPTIONS)
+  const departments = await wrapped(TABLE, OPTIONS)
 
-  const count  = personnels.length,
+  const count  = departments.length,
     pages = Math.ceil(count / OPTIONS.pageSize),
     offset = (page * OPTIONS.pageSize) - OPTIONS.pageSize
 
-  return personnels.map(personnel => {
-    let photoURL
-    if (personnel.get('Photo')) {
-      photoURL = personnel.get('Photo')[0].thumbnails.large.url
-    }
-
-    return {
-      id: personnel.getId(),
-      name: personnel.get('Name'),
-      title: personnel.get('Title'),
-      photo: photoURL,
-      pages
-    }
-  })
+  return departments.map(department => ({
+    id: department.getId(),
+    name: department.get('Name'),
+    pages
+  }))
   .slice(offset, OPTIONS.pageSize * page)
 }
 
-exports.displayPersonnels = async (req, res) => {
-  let page = req.params.page || req.query.page || 1
-
-  cache.wrap('personnels-' + page, () => getPersonnels(page))
-  .then(personnels => {
-    res.json(personnels)
-  })
-}
+  exports.displayDepartments = async (req, res) => {
+    let page = req.params.page || req.query.page || 1
+  
+    cache.wrap('departments-' + page, () => getDepartments(page))
+    .then(departments => {
+      res.json(departments)
+    })
+  }
