@@ -28,3 +28,22 @@ exports.getAirtableRecords = (table, options) => {
     table.select(params).eachPage(processPage, processRecords)
   })
 }
+
+exports.getAirtableRecord = (table, id) => {
+  return new Promise((resolve, reject) => {
+    const processRecord = (err, record) => {
+      if (err) {
+        reject(err)
+        return
+      }
+
+      record = {
+        id: record.id,
+        name: record.get('Name')
+      }
+      resolve(record)
+    }
+
+    table.find(id, processRecord)
+  })
+}

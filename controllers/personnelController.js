@@ -31,15 +31,14 @@ const OPTIONS = {
 }
 
 const getPersonnels = async (page) => {
-  const wrapped = limiter.wrap(data.getAirtableRecords)
-
   const departments = {}
   const departmentsData = await departmentController.generateDepartments()
   departmentsData.forEach(function (department) {
     departments[department.id] = department.name
   })
 
-  const personnels = await wrapped(TABLE, OPTIONS)
+  const wrappedRecords = limiter.wrap(data.getAirtableRecords)
+  const personnels = await wrappedRecords(TABLE, OPTIONS)
 
   const count  = personnels.length,
     pages = Math.ceil(count / OPTIONS.pageSize),
@@ -75,11 +74,27 @@ const getPersonnels = async (page) => {
   .slice(offset, OPTIONS.pageSize * page)
 }
 
+const getPersonnelById = async (id) => {
+  const wrappedRecord = limiter.wrap(data.getAirtableRecord)
+  const personnel = await wrappedRecord(TABLE, id)
+
+  return personnel
+}
+
 exports.displayPersonnels = async (req, res) => {
   let page = req.params.page || req.query.page || 1
 
   cache.wrap('personnels-' + page, () => getPersonnels(page))
   .then(personnels => {
     res.json(personnels)
+  })
+}
+
+exports.displayPersonnel = async (req, res) => {
+  const id = req.params.id
+
+  cache.wrap('personnel-' + id, () => getPersonnelById(id))
+  .then(personnel => {
+    res.json(personnel)
   })
 }
