@@ -27,7 +27,13 @@ const TABLE = base('Personnel')
 const OPTIONS = {
   view: 'Default',
   filterByFormula: "NOT({Name} = '')",
-  pageSize: 100
+  pageSize: 100,
+  fields: [
+    'Name',
+    'Title',
+    'Department',
+    'Photo',
+  ]
 }
 
 const getDepartments = async () => {
