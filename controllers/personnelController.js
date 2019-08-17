@@ -1,8 +1,9 @@
 const Airtable = require('airtable')
 const Bottleneck = require('bottleneck')
-const data = require('./dataController.js')
+const data = require('./dataController')
 const dotenv = require('dotenv')
 const Cacheman = require('cacheman')
+const departmentController = require('./departmentController')
 
 const cacheOptions = {
   ttl: 3600
@@ -31,6 +32,13 @@ const OPTIONS = {
 
 const getPersonnels = async (page) => {
   const wrapped = limiter.wrap(data.getAirtableRecords)
+
+  const departments = {}
+  const departmentsData = await departmentController.generateDepartments()
+  departmentsData.forEach(function (department) {
+    departments[department.id] = department.name
+  })
+
   const personnels = await wrapped(TABLE, OPTIONS)
 
   const count  = personnels.length,
@@ -43,10 +51,23 @@ const getPersonnels = async (page) => {
       photoURL = personnel.get('Photo')[0].thumbnails.large.url
     }
 
+    let personnelDepartments = []
+    if (personnel.get('Department')) {
+      const depts = personnel.get('Department')
+      let personnelDepartment = {}
+
+      depts.forEach(function (dept) {
+        personnelDepartment[dept] = departments[dept]
+      })
+
+      personnelDepartments.push(personnelDepartment)
+    }
+
     return {
       id: personnel.getId(),
       name: personnel.get('Name'),
       title: personnel.get('Title'),
+      department: personnelDepartments,
       photo: photoURL,
       pages
     }

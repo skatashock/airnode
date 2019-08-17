@@ -44,11 +44,19 @@ const getDepartments = async (page) => {
   .slice(offset, OPTIONS.pageSize * page)
 }
 
-  exports.displayDepartments = async (req, res) => {
-    let page = req.params.page || req.query.page || 1
-  
-    cache.wrap('departments-' + page, () => getDepartments(page))
-    .then(departments => {
-      res.json(departments)
-    })
-  }
+exports.displayDepartments = async (req, res) => {
+  let page = req.params.page || req.query.page || 1
+
+  cache.wrap('departments-' + page, () => getDepartments(page))
+  .then(departments => {
+    res.json(departments)
+  })
+}
+
+exports.generateDepartments = async () => {
+  let page =  1
+  return cache.wrap('departments-' + page, () => getDepartments(page))
+  .then(departments => {
+    return departments
+  })
+}
