@@ -1,6 +1,7 @@
 const Airtable = require('airtable')
 const Bottleneck = require('bottleneck')
 const data = require('./dataController.js')
+const personnelController = require('./personnelController')
 const dotenv = require('dotenv')
 const Cacheman = require('cacheman')
 
@@ -49,11 +50,14 @@ const getDepartmentById = async (id) => {
   const wrappedRecord = limiter.wrap(data.getAirtableRecord)
   const department = await wrappedRecord(TABLE, id)
 
+  const ids = department.get('Members')
+  const members = await personnelController.displayPersonnelsByIds(ids)
+
   return {
     id: department.getId(),
     name: department.get('Name'),
     headcount: department.get('Headcount'),
-    members: department.get('Members'),
+    members: members,
   }
 }
 

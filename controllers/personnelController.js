@@ -110,6 +110,37 @@ const getPersonnelById = async (id) => {
   }
 }
 
+const getPersonnelsByIds = async (ids) => {
+  if (ids.length > 0) {
+    let filterString = 'OR( '
+    ids.forEach((id, index) => {
+      filterString += (`RECORD_ID() = '${id}'`)
+      if (index < (ids.length - 1)) {          
+        filterString += (', ')
+      } else {          
+        filterString += (')')
+      }      
+    })
+    OPTIONS['filterByFormula'] = filterString
+  }
+  
+  OPTIONS['fields'] = ['Name']
+  
+  const page = 1
+  const wrappedRecords = limiter.wrap(data.getAirtableRecords)
+  const personnels = await wrappedRecords(TABLE, OPTIONS)
+
+  const offset = (page * OPTIONS.pageSize) - OPTIONS.pageSize
+
+  return personnels.map(personnel => {
+    return {
+      id: personnel.getId(),
+      name: personnel.get('Name')
+    }
+  })
+  .slice(offset, OPTIONS.pageSize * page)
+}
+
 exports.displayPersonnels = async (req, res) => {
   let page = req.params.page || req.query.page || 1
 
@@ -117,6 +148,12 @@ exports.displayPersonnels = async (req, res) => {
   .then(personnels => {
     res.json(personnels)
   })
+}
+
+exports.displayPersonnelsByIds = async (ids) => {
+  const personnels = await getPersonnelsByIds(ids)
+  return personnels
+
 }
 
 exports.displayPersonnel = async (req, res) => {
