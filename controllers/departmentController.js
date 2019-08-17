@@ -39,6 +39,7 @@ const getDepartments = async (page) => {
   return departments.map(department => ({
     id: department.getId(),
     name: department.get('Name'),
+    headcount: department.get('Headcount'),
     pages
   }))
   .slice(offset, OPTIONS.pageSize * page)
