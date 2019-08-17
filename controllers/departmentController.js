@@ -45,6 +45,18 @@ const getDepartments = async (page) => {
   .slice(offset, OPTIONS.pageSize * page)
 }
 
+const getDepartmentById = async (id) => {
+  const wrappedRecord = limiter.wrap(data.getAirtableRecord)
+  const department = await wrappedRecord(TABLE, id)
+
+  return {
+    id: department.getId(),
+    name: department.get('Name'),
+    headcount: department.get('Headcount'),
+    members: department.get('Members'),
+  }
+}
+
 exports.displayDepartments = async (req, res) => {
   let page = req.params.page || req.query.page || 1
 
@@ -59,5 +71,14 @@ exports.generateDepartments = async () => {
   return cache.wrap('departments-' + page, () => getDepartments(page))
   .then(departments => {
     return departments
+  })
+}
+
+exports.displayDepartment = async (req, res) => {
+  const id = req.params.id
+
+  cache.wrap('department-' + id, () => getDepartmentById(id))
+  .then(department => {
+    res.json(department)
   })
 }
