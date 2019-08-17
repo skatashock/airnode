@@ -36,11 +36,7 @@ exports.getAirtableRecord = (table, id) => {
         reject(err)
         return
       }
-
-      record = {
-        id: record.id,
-        name: record.get('Name')
-      }
+      
       resolve(record)
     }
 

@@ -30,13 +30,18 @@ const OPTIONS = {
   pageSize: 100
 }
 
-const getPersonnels = async (page) => {
+const getDepartments = async () => {
   const departments = {}
   const departmentsData = await departmentController.generateDepartments()
   departmentsData.forEach(function (department) {
     departments[department.id] = department.name
   })
 
+  return departments
+}
+
+const getPersonnels = async (page) => {
+  const departments = await getDepartments()
   const wrappedRecords = limiter.wrap(data.getAirtableRecords)
   const personnels = await wrappedRecords(TABLE, OPTIONS)
 
@@ -75,10 +80,28 @@ const getPersonnels = async (page) => {
 }
 
 const getPersonnelById = async (id) => {
+  const departments = await getDepartments()
   const wrappedRecord = limiter.wrap(data.getAirtableRecord)
   const personnel = await wrappedRecord(TABLE, id)
 
-  return personnel
+  let personnelDepartments = []
+  if (personnel.get('Department')) {
+    const depts = personnel.get('Department')
+    let personnelDepartment = {}
+
+    depts.forEach(function (dept) {
+      personnelDepartment[dept] = departments[dept]
+    })
+
+    personnelDepartments.push(personnelDepartment)
+  }
+
+  return {
+    id: personnel.getId(),
+    name: personnel.get('Name'),
+    title: personnel.get('Title'),
+    department: personnelDepartments,
+  }
 }
 
 exports.displayPersonnels = async (req, res) => {
