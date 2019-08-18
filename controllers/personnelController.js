@@ -67,7 +67,8 @@ const getPersonnels = async (page) => {
       let personnelDepartment = {}
 
       depts.forEach(function (dept) {
-        personnelDepartment[dept] = departments[dept]
+        personnelDepartment['id'] = dept
+        personnelDepartment['name'] = departments[dept]
       })
 
       personnelDepartments.push(personnelDepartment)
@@ -96,7 +97,8 @@ const getPersonnelById = async (id) => {
     let personnelDepartment = {}
 
     depts.forEach(function (dept) {
-      personnelDepartment[dept] = departments[dept]
+      personnelDepartment['id'] = dept
+      personnelDepartment['name'] = departments[dept]
     })
 
     personnelDepartments.push(personnelDepartment)
