@@ -109,6 +109,15 @@ const getPersonnelById = async (id) => {
     name: personnel.get('Name'),
     title: personnel.get('Title'),
     department: personnelDepartments,
+    ssn: personnel.get('Social Security #'),
+    address: personnel.get('Home Address'),
+    email: personnel.get('Main Email'),
+    birthdate: personnel.get('Birthdate'),
+    hiredDate: personnel.get('Date of Hire'),
+    mobile: personnel.get('Mobile #'),
+    reportingTo: personnel.get('Reporting To'),
+    status: personnel.get('Status'),
+    birthday: personnel.get('Birthday')
   }
 }
 
