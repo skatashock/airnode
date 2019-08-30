@@ -91,6 +91,11 @@ const getPersonnelById = async (id) => {
   const wrappedRecord = limiter.wrap(data.getAirtableRecord)
   const personnel = await wrappedRecord(TABLE, id)
 
+  let photoURL
+  if (personnel.get('Photo')) {
+    photoURL = personnel.get('Photo')[0].thumbnails.large.url
+  }
+
   let personnelDepartments = []
   if (personnel.get('Department')) {
     const depts = personnel.get('Department')
@@ -104,18 +109,34 @@ const getPersonnelById = async (id) => {
     personnelDepartments.push(personnelDepartment)
   }
 
+  let reportingTos = []
+  if (personnel.get('Reporting To')) {
+    const personnels = await getPersonnelsByIds(personnel.get('Reporting To'))
+    reportingTos = personnels
+    // let reportingTo = {}
+
+    // personnels.forEach(function (personnel) {
+    //   reportingTo['id'] = personnel.id
+    //   reportingTo['name'] = personnel.name
+    // })
+
+    // reportingTos.push(reportingTo)
+    // console.log(reportingTos)
+  }
+
   return {
     id: personnel.getId(),
     name: personnel.get('Name'),
     title: personnel.get('Title'),
     department: personnelDepartments,
+    photo: photoURL,
     ssn: personnel.get('Social Security #'),
     address: personnel.get('Home Address'),
     email: personnel.get('Main Email'),
     birthdate: personnel.get('Birthdate'),
     hiredDate: personnel.get('Date of Hire'),
     mobile: personnel.get('Mobile #'),
-    reportingTo: personnel.get('Reporting To'),
+    reportingTo: reportingTos,
     status: personnel.get('Status'),
     birthday: personnel.get('Birthday')
   }
