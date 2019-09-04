@@ -2,14 +2,11 @@ const Airtable = require('airtable')
 const Bottleneck = require('bottleneck')
 const data = require('./dataController')
 const dotenv = require('dotenv')
-const Cacheman = require('cacheman')
 const departmentController = require('./departmentController')
 
-const cacheOptions = {
-  ttl: 3600
-}
-
-const cache = new Cacheman('airdir', cacheOptions)
+const cacheService = require('../services/cacheService')
+const ttl = 60 * 60 * 1 // cache for 1 Hour
+const cache = new cacheService(ttl)
 
 // get dotenv configs
 dotenv.config()
@@ -176,7 +173,7 @@ const getPersonnelsByIds = async (ids) => {
 exports.displayPersonnels = async (req, res) => {
   let page = req.params.page || req.query.page || 1
 
-  cache.wrap('personnels-' + page, () => getPersonnels(page))
+  cache.get('personnels-' + page, () => getPersonnels(page))
   .then(personnels => {
     res.json(personnels)
   })
@@ -191,7 +188,7 @@ exports.displayPersonnelsByIds = async (ids) => {
 exports.displayPersonnel = async (req, res) => {
   const id = req.params.id
 
-  cache.wrap('personnel-' + id, () => getPersonnelById(id))
+  cache.get('personnel-' + id, () => getPersonnelById(id))
   .then(personnel => {
     res.json(personnel)
   })

@@ -3,13 +3,10 @@ const Bottleneck = require('bottleneck')
 const data = require('./dataController.js')
 const personnelController = require('./personnelController')
 const dotenv = require('dotenv')
-const Cacheman = require('cacheman')
 
-const cacheOptions = {
-  ttl: 86400
-}
-
-const cache = new Cacheman('airdir', cacheOptions)
+const cacheService = require('../services/cacheService')
+const ttl = 60 * 60 * 1 // cache for 1 Hour
+const cache = new cacheService(ttl)
 
 // get dotenv configs
 dotenv.config()
@@ -64,7 +61,7 @@ const getDepartmentById = async (id) => {
 exports.displayDepartments = async (req, res) => {
   let page = req.params.page || req.query.page || 1
 
-  cache.wrap('departments-' + page, () => getDepartments(page))
+  cache.get('departments-' + page, () => getDepartments(page))
   .then(departments => {
     res.json(departments)
   })
@@ -72,7 +69,7 @@ exports.displayDepartments = async (req, res) => {
 
 exports.generateDepartments = async () => {
   let page =  1
-  return cache.wrap('departments-' + page, () => getDepartments(page))
+  return cache.get('departments-' + page, () => getDepartments(page))
   .then(departments => {
     return departments
   })
@@ -81,7 +78,7 @@ exports.generateDepartments = async () => {
 exports.displayDepartment = async (req, res) => {
   const id = req.params.id
 
-  cache.wrap('department-' + id, () => getDepartmentById(id))
+  cache.get('department-' + id, () => getDepartmentById(id))
   .then(department => {
     res.json(department)
   })
